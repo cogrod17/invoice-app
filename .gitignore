@@ -1,0 +1,5 @@
+node_modules
+dist
+Makefile
+.env
+createtabel.txt
