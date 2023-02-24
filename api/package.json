@@ -8,7 +8,8 @@
     "start": "tsc && node ./dist/app.js",
     "lint": "eslint . --ext .ts",
     "migrate": "node-pg-migrate",
-    "test": "jest"
+    "test": "jest --detectOpenHandles",
+    "test:watch": "jest --watch"
   },
   "author": "Cole Ogrodnick",
   "license": "ISC",

@@ -22,10 +22,7 @@ export const addItemsToInvoice = async (
     values
   );
 
-  db.query(
-    text,
-    [],
-    (result) => res.status(200).send(result.rows),
-    (error) => res.status(500).send(error)
+  db.query(text, [], (error, result) =>
+    error ? res.status(500).send(error) : res.status(200).send(result.rows)
   );
 };

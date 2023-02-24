@@ -4,15 +4,12 @@ import swaggerUi from "swagger-ui-express";
 import db from "./database";
 import routes from "./routes";
 import { swaggerDocument } from "./docs/swagger";
-import { DB } from "./database/config";
 
 export class Server {
   public app: Application;
-  public db: DB;
 
-  constructor(database: DB) {
+  constructor() {
     this.app = express();
-    this.db = database;
     this.config();
     this.routerConfig();
     this.dbConnect();
@@ -27,7 +24,11 @@ export class Server {
     this.app.use(bodyParser.json());
   };
 
-  private dbConnect = () => db.connect();
+  private dbConnect = () =>
+    db.connect((err: Error, client) => {
+      if (err) throw new Error();
+      client.release();
+    });
 
   private routerConfig = () => {
     for (let i = 0; i < routes.length; i++) {
@@ -45,3 +46,5 @@ export class Server {
         .on("error", (err: object) => reject(err))
     );
 }
+
+export default new Server();

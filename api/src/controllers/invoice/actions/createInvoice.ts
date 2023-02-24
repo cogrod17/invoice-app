@@ -14,7 +14,7 @@ export const createInvoice = async (
     if (!isValidRecipient(recipient))
       return res.status(400).send({ detail: "please enter valid recipient" });
 
-    const { rows } = await db.asyncQuery(
+    const { rows } = await db.query(
       ...createInvoiceQuery(recipient, req.user_id)
     );
 

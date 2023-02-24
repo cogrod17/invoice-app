@@ -11,10 +11,11 @@ export const deleteItemFromInvoice = async (
   db.query(
     `DELETE FROM items WHERE id = $1`,
     [req.params.item_id],
-    ({ rowCount }) =>
-      rowCount > 0
+    (error, { rowCount }) =>
+      error
+        ? res.send(400)
+        : rowCount > 0
         ? res.status(200).send("Deleted successfully")
-        : res.status(404).send("Record not found"),
-    () => res.send(400)
+        : res.status(404).send("Record not found")
   );
 };

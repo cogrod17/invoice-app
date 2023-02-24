@@ -11,10 +11,12 @@ export const deleteInvoice = async (
   db.query(
     "DELETE FROM drafts WHERE id = $1",
     [req.params.draft_id],
-    ({ rowCount }) =>
-      rowCount > 0
+    (error, result) => {
+      if (error) return res.status(400).send({ detail: "there was an error" });
+
+      return result.rowCount > 0
         ? res.status(200).send({ detail: "draft deleted" })
-        : res.status(404).send({ detail: "no draft found with that id" }),
-    () => res.status(400).send({ detail: "there was an error" })
+        : res.status(404).send({ detail: "no draft found with that id" });
+    }
   );
 };

@@ -17,7 +17,8 @@ const login = async (
   db.query(
     `SELECT id, email, firstname, lastname FROM users WHERE email = $1 AND password = crypt($2, password)`,
     [req.body.email, req.body.password],
-    ({ rows }) => {
+    (error, { rows }) => {
+      if (error) return res.status(400).send(error);
       const user = rows?.[0];
       if (!user) return res.status(404).send({ detail: "No user found" });
 
@@ -26,15 +27,16 @@ const login = async (
       user.refresh_token = refresh_token;
 
       res.status(200).send(user);
-    },
-    (error) => res.status(400).send(error)
+    }
   );
 
 const createUser = async (req: TypedReqBody<UserCredentials>, res: Response) =>
   db.query(
     `INSERT INTO users(email, password) VALUES ($1::email, crypt($2, gen_salt('bf'))) RETURNING id, email, firstname, lastname`,
     [req.body.email, req.body.password],
-    ({ rows }) => {
+    (error, { rows }) => {
+      if (error) return res.status(400).send(error);
+
       const user: UserRes = rows[0];
 
       const { access_token, refresh_token } = signTokens(user.id);
@@ -45,20 +47,20 @@ const createUser = async (req: TypedReqBody<UserCredentials>, res: Response) =>
         return res.status(500).send({ detail: "could not generate tokens" });
 
       res.status(200).send(user);
-    },
-    (error) => res.status(400).send(error)
+    }
   );
 
 const getUser: DBQuery = async (req, res) =>
   db.query(
     `SELECT id, email, firstname, lastname FROM users WHERE id = $1`,
     [req.params.id],
-    ({ rows }) => {
+    (error, { rows }) => {
+      if (error) return res.status(400).send(error);
+
       const user: UserFromDB = rows[0];
       if (!user) res.send(404);
       res.status(200).send(user);
-    },
-    (err) => res.status(400).send(err)
+    }
   );
 
 const updateUser = async (req: TypedReqBody<UpdateUser>, res: Response) => {
@@ -70,8 +72,10 @@ const updateUser = async (req: TypedReqBody<UpdateUser>, res: Response) => {
   db.query(
     "UPDATE users SET email = $1, firstname = $2, lastname = $3 WHERE id = $4 RETURNING id, email, firstname, lastname",
     [email, firstname, lastname, req.params.id],
-    ({ rows }) => res.status(200).send(rows[0]),
-    () => res.status(400).send({ detail: "there was an error updating" })
+    (error, { rows }) =>
+      error
+        ? res.status(400).send({ detail: "there was an error updating" })
+        : res.status(200).send(rows[0])
   );
 };
 
@@ -81,12 +85,13 @@ const deleteUser: DBQuery = async (req, res) => {
   db.query(
     "DELETE FROM users WHERE id = $1",
     [req.params.id],
-    ({ rowCount }) => {
-      rowCount > 0
+    (error, { rowCount }) => {
+      error
+        ? res.send(500)
+        : rowCount > 0
         ? res.status(200).send({ detail: "user deleted" })
         : res.status(404).send({ detail: "No user found" });
-    },
-    () => res.send(500)
+    }
   );
 };
 
@@ -98,12 +103,13 @@ const setPassword = async (
   db.query(
     `UPDATE users SET password = crypt($1, gen_salt('bf')) WHERE password = crypt($2, password) AND id = $3`,
     [req.body.newPassword, req.body.oldPassword, req.params.id],
-    ({ rowCount }) => {
-      rowCount > 0
+    (error, { rowCount }) => {
+      error
+        ? res.send(500)
+        : rowCount > 0
         ? res.status(200).send({ detail: "password updated" })
         : res.status(404).send({ detail: "incorrect password" });
-    },
-    () => res.send(500)
+    }
   );
 };
 

@@ -18,7 +18,7 @@ export const updateItem: UpdateFn = async (req, res) => {
   );
 
   try {
-    const { rows, rowCount } = await db.asyncQuery(
+    const { rows, rowCount } = await db.query(
       `UPDATE items SET ${mapColumnsToPlace} WHERE id = $${
         placeholders.length + 1
       } RETURNING *`,
