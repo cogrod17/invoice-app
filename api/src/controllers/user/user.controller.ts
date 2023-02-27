@@ -10,17 +10,27 @@ import {
   UserFromDB,
 } from "./types";
 
+const validCredentials = (user: unknown): user is UserCredentials => {
+  if (!user) return false;
+  if (typeof user !== "object") return false;
+
+  return (
+    "email" in (user as UserCredentials) &&
+    "password" in (user as UserCredentials)
+  );
+};
 const login = async (
   req: TypedReqBody<UserCredentials>,
   res: Response<UserRes | Error | { detail: string }>
-) =>
+) => {
+  if (!validCredentials(req.body)) return res.sendStatus(400);
   db.query(
     `SELECT id, email, firstname, lastname FROM users WHERE email = $1 AND password = crypt($2, password)`,
     [req.body.email, req.body.password],
     (error, { rows }) => {
       if (error) return res.status(400).send(error);
       const user = rows?.[0];
-      if (!user) return res.status(404).send({ detail: "No user found" });
+      if (!user) return res.status(400).send({ detail: "No user found" });
 
       const { access_token, refresh_token } = signTokens(user.id);
       user.access_token = access_token;
@@ -29,6 +39,7 @@ const login = async (
       res.status(200).send(user);
     }
   );
+};
 
 const createUser = async (req: TypedReqBody<UserCredentials>, res: Response) =>
   db.query(

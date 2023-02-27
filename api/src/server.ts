@@ -4,12 +4,15 @@ import swaggerUi from "swagger-ui-express";
 import db from "./database";
 import routes from "./routes";
 import { swaggerDocument } from "./docs/swagger";
+import { Pool } from "pg";
 
 export class Server {
   public app: Application;
+  public db: Pool;
 
-  constructor() {
+  constructor(db: Pool) {
     this.app = express();
+    this.db = db;
     this.config();
     this.routerConfig();
     this.dbConnect();
@@ -25,7 +28,7 @@ export class Server {
   };
 
   private dbConnect = () =>
-    db.connect((err: Error, client) => {
+    this.db.connect((err: Error, client) => {
       if (err) throw new Error();
       client.release();
     });
@@ -47,4 +50,4 @@ export class Server {
     );
 }
 
-export default new Server();
+export default new Server(db);

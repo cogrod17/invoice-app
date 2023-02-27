@@ -21,7 +21,7 @@ describe("POST /draft/create", () => {
 
   afterAll(async () => {
     await db.query("TRUNCATE TABLE drafts, recipients");
-    db.end();
+    // db.end();
   });
 
   it("failed to add authentication", async () => {
