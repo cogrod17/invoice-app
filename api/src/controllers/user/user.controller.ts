@@ -9,16 +9,8 @@ import {
   SetPasswordBody,
   UserFromDB,
 } from "./types";
+import { validCredentials } from "./utils";
 
-const validCredentials = (user: unknown): user is UserCredentials => {
-  if (!user) return false;
-  if (typeof user !== "object") return false;
-
-  return (
-    "email" in (user as UserCredentials) &&
-    "password" in (user as UserCredentials)
-  );
-};
 const login = async (
   req: TypedReqBody<UserCredentials>,
   res: Response<UserRes | Error | { detail: string }>
@@ -41,7 +33,11 @@ const login = async (
   );
 };
 
-const createUser = async (req: TypedReqBody<UserCredentials>, res: Response) =>
+const createUser = async (
+  req: TypedReqBody<UserCredentials>,
+  res: Response
+) => {
+  if (!validCredentials(req.body)) return res.sendStatus(400);
   db.query(
     `INSERT INTO users(email, password) VALUES ($1::email, crypt($2, gen_salt('bf'))) RETURNING id, email, firstname, lastname`,
     [req.body.email, req.body.password],
@@ -60,6 +56,7 @@ const createUser = async (req: TypedReqBody<UserCredentials>, res: Response) =>
       res.status(200).send(user);
     }
   );
+};
 
 const getUser: DBQuery = async (req, res) =>
   db.query(

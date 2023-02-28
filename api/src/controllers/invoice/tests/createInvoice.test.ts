@@ -1,5 +1,4 @@
 import server from "../../../server";
-import db from "../../../database";
 import supertest from "supertest";
 
 const validKeys = ["id", "created_at", "updated_at", "user_id", "recipient_id"];
@@ -7,22 +6,21 @@ const validKeys = ["id", "created_at", "updated_at", "user_id", "recipient_id"];
 const { ACCESS_TOKEN } = process.env;
 
 describe("POST /draft/create", () => {
-  const request = supertest(server.app);
+  const { db, app } = server;
+
+  const request = supertest(app);
   const newInvoice = {
     name: "ineedaddress",
     email: "boomboom@email.com",
     address1: "1234 Cedarhurst Lane",
     zip: 33707,
   };
-  let token: ["Authorization", string] = [
+  const token: ["Authorization", string] = [
     "Authorization",
     `Bearer ${ACCESS_TOKEN || ""}`,
   ];
 
-  afterAll(async () => {
-    await db.query("TRUNCATE TABLE drafts, recipients");
-    // db.end();
-  });
+  afterAll(async () => await db.query("TRUNCATE TABLE drafts, recipients"));
 
   it("failed to add authentication", async () => {
     const res = await request.post("/draft/create").send(newInvoice);

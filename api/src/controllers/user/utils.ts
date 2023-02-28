@@ -1,3 +1,5 @@
+import { UserCredentials } from "./types";
+
 type TextParamsFormatted = {
   text: string;
   params: any[]; //eslint-disable-line
@@ -31,3 +33,13 @@ export const generateUpdateQueryById: GenUpdateQueryById = ({
     ` RETURNING ${returning}`,
   params: [...Object.values(body), item_id],
 });
+
+export const validCredentials = (user: unknown): user is UserCredentials => {
+  if (!user) return false;
+  if (typeof user !== "object") return false;
+
+  return (
+    "email" in (user as UserCredentials) &&
+    "password" in (user as UserCredentials)
+  );
+};

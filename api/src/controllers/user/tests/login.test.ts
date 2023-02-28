@@ -11,6 +11,11 @@ interface TestUser {
   password: string;
 }
 
+/*
+1. Incorrect email or password
+2. correct email and password
+*/
+
 describe("POST user login", () => {
   const request = supertest(server.app);
   const user: TestUser | undefined = JSON.parse(TEST_USER || "");
@@ -31,6 +36,9 @@ describe("POST user login", () => {
     }
   });
 
+  /*
+  Correct email password
+  */
   it("correct email & password", async () => {
     const res = await request.post("/user/login").send({
       email: user?.email,
