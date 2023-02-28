@@ -1,6 +1,7 @@
 import supertest from "supertest";
 import server from "../../../server";
 import { validateProperties } from "../../../utils";
+import { testConstants } from "../../../tests/jestSetup";
 
 describe("POST /user/create", () => {
   const { app, db } = server;

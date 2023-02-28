@@ -58,22 +58,27 @@ const createUser = async (
   );
 };
 
-const getUser: DBQuery = async (req, res) =>
+const getUser: DBQuery = async (req, res) => {
+  if (req.user_id !== +req.params.id) return res.sendStatus(401);
   db.query(
     `SELECT id, email, firstname, lastname FROM users WHERE id = $1`,
     [req.params.id],
-    (error, { rows }) => {
+    (error, { rows }: { rows: UserFromDB[] }) => {
       if (error) return res.status(400).send(error);
 
-      const user: UserFromDB = rows[0];
-      if (!user) res.send(404);
+      const user = rows?.[0];
+      if (!user) return res.sendStatus(400);
+
       res.status(200).send(user);
     }
   );
+};
 
 const updateUser = async (req: TypedReqBody<UpdateUser>, res: Response) => {
   if (!req.user_id)
     return res.status(500).send({ detail: "Cannot find user id" });
+  if (req.user_id !== req.body.id || +req.params.id !== req.user_id)
+    return res.sendStatus(401);
 
   const { email, firstname, lastname } = req.body;
 

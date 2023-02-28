@@ -1,15 +1,9 @@
 import server from "../../../server";
 import supertest from "supertest";
 import { validateProperties } from "../../../utils";
+import { testConstants } from "../../../tests/jestSetup";
 
-const { TEST_USER } = process.env;
-
-interface TestUser {
-  email: string;
-  firstName: string;
-  lastName: string;
-  password: string;
-}
+const { TEST_USER } = testConstants;
 
 /*
 1. Incorrect email or password
@@ -18,16 +12,15 @@ interface TestUser {
 
 describe("POST user login", () => {
   const request = supertest(server.app);
-  const user: TestUser | undefined = JSON.parse(TEST_USER || "");
 
   it("incorrect email or password", async () => {
     const cases = [
       {},
       { email: "wrong@email.com", password: "wrongpassword" },
-      { email: user?.email },
-      { password: user?.password },
-      { email: user?.email, password: "wrong" },
-      { email: "wrongemail", password: user?.password },
+      { email: TEST_USER?.email },
+      { password: TEST_USER?.password },
+      { email: TEST_USER?.email, password: "wrong" },
+      { email: "wrongemail", password: TEST_USER?.password },
     ];
 
     for (const c in cases) {
@@ -41,8 +34,8 @@ describe("POST user login", () => {
   */
   it("correct email & password", async () => {
     const res = await request.post("/user/login").send({
-      email: user?.email,
-      password: user?.password,
+      email: TEST_USER?.email,
+      password: TEST_USER?.password,
     });
     expect(res.statusCode).toBe(200);
     expect(
