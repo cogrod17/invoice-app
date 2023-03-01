@@ -121,7 +121,7 @@ const setPassword = async (
         ? res.send(500)
         : rowCount > 0
         ? res.status(200).send({ detail: "password updated" })
-        : res.status(404).send({ detail: "incorrect password" });
+        : res.status(400).send({ detail: "incorrect password" });
     }
   );
 };
